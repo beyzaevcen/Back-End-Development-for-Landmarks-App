@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Landmark Creator</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Landmark Explorer</h1>
+
+      <div class="map-container">
+        <h2>Click on the Map to Add Landmarks</h2>
+        <div id="map"></div>
+      </div>
+
+      <div class="form-container">
+        <div id="landmarkForm" class="form-section">
+          <h3>Add New Landmark</h3>
+          <input
+            type="text"
+            id="landmarkName"
+            placeholder="Landmark Name"
+            required
+          />
+          <select id="landmarkCategory">
+            <option value="historical">Historical</option>
+            <option value="natural">Natural</option>
+            <option value="cultural">Cultural</option>
+            <option value="other">Other</option>
+          </select>
+          <textarea
+            id="landmarkDescription"
+            placeholder="Description"
+          ></textarea>
+          <p>Coordinates: <span id="selectedCoords">Not selected</span></p>
+          <button id="saveLandmarkBtn" disabled>Save Landmark</button>
+        </div>
+
+        <div class="form-section">
+          <h3>Selected Landmarks</h3>
+          <ul id="landmarkList"></ul>
+          <div class="button-group">
+            <button id="addNotesBtn">Add Notes</button>
+            <button id="showVisitedBtn">Show Visited Landmarks</button>
+            <button id="createPlanBtn">Create Visiting Plan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modals -->
+      <div id="notesModal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <h3>Add Notes to Landmark</h3>
+          <select id="landmarkSelect"></select>
+          <textarea
+            id="noteText"
+            placeholder="Enter your notes here..."
+          ></textarea>
+          <input type="text" id="visitorName" placeholder="Your Name" />
+          <button id="saveNoteBtn">Save Note</button>
+        </div>
+      </div>
+
+      <div id="visitedModal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <h3>Visited Landmarks</h3>
+          <div id="visitedList"></div>
+        </div>
+      </div>
+
+      <div id="planModal" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <h3>Create Visiting Plan</h3>
+          <div id="planLandmarks"></div>
+          <input type="text" id="planName" placeholder="Plan Name" />
+          <button id="savePlanBtn">Save Plan</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>
