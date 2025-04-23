@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import Landmark from "./models/Landmark.js";
 import VisitedLandmark from "./models/VisitedLandmark.js";
+import VisitingPlan from "./models/VisitingPlan.js";
 
 dotenv.config();
 
@@ -27,10 +28,8 @@ mongoose
     console.error("MongoDB bağlantı hatası:", err);
   });
 
-// ---------- LANDMARK API ENDPOINTS ---------- //
 
-// Create a new landmark
-app.post("/api/landmarks", async (req, res) => {
+app.post("/landmarks", async (req, res) => {
   try {
     const { name, latitude, longitude, description, category } = req.body;
 
@@ -58,8 +57,7 @@ app.post("/api/landmarks", async (req, res) => {
   }
 });
 
-// Get all landmarks
-app.get("/api/landmarks", async (req, res) => {
+app.get("/landmarks", async (req, res) => {
   try {
     const landmarks = await Landmark.find();
     res.json(landmarks);
@@ -69,8 +67,7 @@ app.get("/api/landmarks", async (req, res) => {
   }
 });
 
-// Get a specific landmark
-app.get("/api/landmarks/:id", async (req, res) => {
+app.get("/landmarks/:id", async (req, res) => {
   try {
     const landmark = await Landmark.findById(req.params.id);
 
@@ -85,19 +82,16 @@ app.get("/api/landmarks/:id", async (req, res) => {
   }
 });
 
-// Update a landmark
-app.put("/api/landmarks/:id", async (req, res) => {
+app.put("/landmarks/:id", async (req, res) => {
   try {
     const { name, latitude, longitude, description, category } = req.body;
 
-    // Güncellenecek verileri hazırla
     const updateData = {
       name,
       description,
       category,
     };
 
-    // Konum bilgisi varsa güncelle
     if (latitude !== undefined && longitude !== undefined) {
       updateData.location = {
         latitude,
@@ -108,7 +102,7 @@ app.put("/api/landmarks/:id", async (req, res) => {
     const updatedLandmark = await Landmark.findByIdAndUpdate(
       req.params.id,
       updateData,
-      { new: true } // Güncellenmiş veriyi döndür
+      { new: true } 
     );
 
     if (!updatedLandmark) {
@@ -122,8 +116,7 @@ app.put("/api/landmarks/:id", async (req, res) => {
   }
 });
 
-// Delete a landmark
-app.delete("/api/landmarks/:id", async (req, res) => {
+app.delete("/landmarks/:id", async (req, res) => {
   try {
     const deletedLandmark = await Landmark.findByIdAndDelete(req.params.id);
 
@@ -131,8 +124,13 @@ app.delete("/api/landmarks/:id", async (req, res) => {
       return res.status(404).json({ error: "Landmark bulunamadı" });
     }
 
-    // İlgili ziyaret kayıtlarını da sil
     await VisitedLandmark.deleteMany({ landmark_id: req.params.id });
+
+    // Also remove this landmark from any plans
+    await VisitingPlan.updateMany(
+      { "landmarks.landmark_id": req.params.id },
+      { $pull: { landmarks: { landmark_id: req.params.id } } }
+    );
 
     res.json({ message: "Landmark başarıyla silindi" });
   } catch (error) {
@@ -141,19 +139,16 @@ app.delete("/api/landmarks/:id", async (req, res) => {
   }
 });
 
-// ---------- VISITED LANDMARK API ENDPOINTS ---------- //
 
-// Record a visited landmark
-app.post("/api/visited", async (req, res) => {
+app.post("/visited", async (req, res) => {
   try {
-    const { landmark_id, visitor_name, notes } = req.body;
+    const { landmark_id, visitor_name } = req.body;
     const visited_date = req.body.visited_date || new Date();
 
     if (!landmark_id) {
       return res.status(400).json({ error: "Landmark ID zorunludur" });
     }
 
-    // Landmark'ın var olduğunu kontrol et
     const landmark = await Landmark.findById(landmark_id);
     if (!landmark) {
       return res.status(404).json({ error: "Landmark bulunamadı" });
@@ -163,7 +158,6 @@ app.post("/api/visited", async (req, res) => {
       landmark_id,
       visited_date,
       visitor_name: visitor_name || "Anonim",
-      notes: notes || "",
     });
 
     const savedVisit = await newVisit.save();
@@ -174,13 +168,10 @@ app.post("/api/visited", async (req, res) => {
   }
 });
 
-// Get all visited landmarks
-app.get("/api/visited", async (req, res) => {
+app.get("/visited", async (req, res) => {
   try {
-    // Ziyaret kayıtlarını al ve landmark bilgileriyle birleştir
     const visits = await VisitedLandmark.find().sort({ visited_date: -1 });
 
-    // Landmark bilgilerini ekleyerek zenginleştirilmiş veri oluştur
     const enrichedVisits = await Promise.all(
       visits.map(async (visit) => {
         const landmark = await Landmark.findById(visit.landmark_id);
@@ -198,11 +189,10 @@ app.get("/api/visited", async (req, res) => {
   }
 });
 
-// Get visit history for a specific landmark
-app.get("/api/visited/:landmark_id", async (req, res) => {
+app.get("/visited/:id", async (req, res) => {
   try {
     const visits = await VisitedLandmark.find({
-      landmark_id: req.params.landmark_id,
+      landmark_id: req.params.id,
     }).sort({ visited_date: -1 });
 
     res.json(visits);
@@ -212,46 +202,98 @@ app.get("/api/visited/:landmark_id", async (req, res) => {
   }
 });
 
-// Update a visit record
-app.put("/api/visited/:id", async (req, res) => {
-  try {
-    const { visitor_name, visited_date, notes } = req.body;
 
-    const updatedVisit = await VisitedLandmark.findByIdAndUpdate(
-      req.params.id,
-      {
-        visitor_name,
-        visited_date,
-        notes,
-      },
-      { new: true }
+// Create a new visiting plan
+app.post("/plans", async (req, res) => {
+  try {
+    const { name, creator, landmarks, description, is_public, planned_date } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: "Plan ismi zorunludur" });
+    }
+
+    if (!landmarks || !Array.isArray(landmarks) || landmarks.length === 0) {
+      return res.status(400).json({ error: "En az bir landmark eklenmelidir" });
+    }
+
+    // Validate that all landmarks exist
+    const landmarkIds = landmarks.map(item => item.landmark_id);
+    const existingLandmarks = await Landmark.find({ _id: { $in: landmarkIds } });
+
+    if (existingLandmarks.length !== landmarkIds.length) {
+      return res.status(400).json({ error: "Bazı landmarklar bulunamadı" });
+    }
+
+    // Add order if not provided
+    const landmarksWithOrder = landmarks.map((item, index) => ({
+      ...item,
+      order: item.order || index
+    }));
+
+    const newPlan = new VisitingPlan({
+      name,
+      creator: creator || "Anonim",
+      landmarks: landmarksWithOrder,
+      description: description || "",
+      is_public: is_public !== undefined ? is_public : true,
+      planned_date: planned_date || null
+    });
+
+    const savedPlan = await newPlan.save();
+
+    // Populate landmark details for the response
+    const populatedPlan = await VisitingPlan.findById(savedPlan._id);
+    const enrichedPlan = {
+      ...populatedPlan._doc,
+      landmarks: await Promise.all(
+        populatedPlan.landmarks.map(async (item) => {
+          const landmark = await Landmark.findById(item.landmark_id);
+          return {
+            ...item._doc,
+            landmark_details: landmark || { name: "Silinmiş Landmark" }
+          };
+        })
+      )
+    };
+
+    res.status(201).json(enrichedPlan);
+  } catch (error) {
+    console.error("Ziyaret planı oluşturma hatası:", error);
+    res.status(500).json({ error: "Sunucu hatası" });
+  }
+});
+
+// Get all visiting plans
+app.get("/plans", async (req, res) => {
+  try {
+    const plans = await VisitingPlan.find().sort({ createdAt: -1 });
+
+    const enrichedPlans = await Promise.all(
+      plans.map(async (plan) => {
+        const enrichedLandmarks = await Promise.all(
+          plan.landmarks.map(async (item) => {
+            const landmark = await Landmark.findById(item.landmark_id);
+            return {
+              ...item._doc,
+              landmark_details: landmark || { name: "Silinmiş Landmark" }
+            };
+          })
+        );
+
+        return {
+          ...plan._doc,
+          landmarks: enrichedLandmarks
+        };
+      })
     );
 
-    if (!updatedVisit) {
-      return res.status(404).json({ error: "Ziyaret kaydı bulunamadı" });
-    }
-
-    res.json(updatedVisit);
+    res.json(enrichedPlans);
   } catch (error) {
-    console.error("Ziyaret güncelleme hatası:", error);
+    console.error("Ziyaret planlarını getirme hatası:", error);
     res.status(500).json({ error: "Sunucu hatası" });
   }
 });
 
-// Delete a visit record
-app.delete("/api/visited/:id", async (req, res) => {
-  try {
-    const deletedVisit = await VisitedLandmark.findByIdAndDelete(req.params.id);
 
-    if (!deletedVisit) {
-      return res.status(404).json({ error: "Ziyaret kaydı bulunamadı" });
-    }
-
-    res.json({ message: "Ziyaret kaydı başarıyla silindi" });
-  } catch (error) {
-    console.error("Ziyaret silme hatası:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
-  }
-});
 
 export default app;
