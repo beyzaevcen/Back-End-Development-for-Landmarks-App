@@ -68,12 +68,12 @@ function fetchFilteredLandmarks(queryParams) {
      
      if (landmarks.length === 0) {
        const landmarkList = document.getElementById('landmarkList');
-       landmarkList.innerHTML = '<li class="no-results">Sonuç bulunamadı</li>';
+       landmarkList.innerHTML = '<li class="no-results">No result</li>';
      }
    })
    .catch((error) => {
      console.error("Error fetching filtered landmarks:", error);
-     showNotification("Filtreleme sırasında bir hata oluştu", "error");
+     showNotification("Error fetching filtered landmark", "error");
    });
 }
 
