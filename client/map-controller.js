@@ -1,4 +1,4 @@
-const API_URL = "https://back-end-development-for-landmarks-app-16cv.vercel.app/api";
+const API_URL = "http://localhost:3002"
 
 let selectedLocation = null;
 let landmarks = [];

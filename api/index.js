@@ -5,17 +5,12 @@ import dotenv from "dotenv";
 import Landmark from "./models/Landmark.js";
 import VisitedLandmark from "./models/VisitedLandmark.js";
 import VisitingPlan from "./models/VisitingPlan.js";
-import serverless from "serverless-http"; 
 
 dotenv.config();
 
 const app = express();
 
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type"]
-}));
+app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection
@@ -24,9 +19,9 @@ mongoose
   .then(() => {
     console.log("MongoDB connection successful");
 
-    // app.listen(PORT, () => {
-    //   console.log(`Server running on port ${PORT}`);
-    // });
+    app.listen(process.env.PORT, () => {
+      console.log(`Server running on port ${process.env.PORT}`);
+    });
   })
   .catch((err) => {
     console.error("MongoDB connection error:", err);
@@ -337,4 +332,4 @@ app.get("/search-landmarks", async (req, res) => {
 
 
 
-export const handler = serverless(app);
+export default app;

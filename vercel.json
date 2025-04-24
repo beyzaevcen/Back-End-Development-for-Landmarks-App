@@ -4,10 +4,6 @@
       {
         "src": "api/index.js",
         "use": "@vercel/node"
-      },
-      {
-        "src": "client/**",
-        "use": "@vercel/static"
       }
     ],
     "routes": [
@@ -20,10 +16,7 @@
           "Access-Control-Allow-Credentials": "true",
           "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
         }
-      },
-      {
-        "src": "/(.*)",
-        "dest": "client/$1"
       }
     ]
   }
+  
