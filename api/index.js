@@ -18,16 +18,18 @@ app.use(express.json());
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {
-    console.log("MongoDB bağlantısı başarılı");
+    console.log("MongoDB connection successful");
 
     app.listen(PORT, () => {
-      console.log(`Sunucu ${PORT} portunda çalışıyor`);
+      console.log(`Server running on port ${PORT}`);
     });
   })
   .catch((err) => {
-    console.error("MongoDB bağlantı hatası:", err);
+    console.error("MongoDB connection error:", err);
   });
 
+
+  //Landmarks endpoints
 
 app.post("/landmarks", async (req, res) => {
   try {
@@ -36,7 +38,7 @@ app.post("/landmarks", async (req, res) => {
     if (!name || !latitude || !longitude) {
       return res
         .status(400)
-        .json({ error: "İsim, enlem ve boylam zorunludur" });
+        .json({ error: "Name, latitude and longitude are required" });
     }
 
     const newLandmark = new Landmark({
@@ -52,8 +54,8 @@ app.post("/landmarks", async (req, res) => {
     const savedLandmark = await newLandmark.save();
     res.status(201).json(savedLandmark);
   } catch (error) {
-    console.error("Landmark oluşturma hatası:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
+    console.error("Error creating landmark:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -62,8 +64,8 @@ app.get("/landmarks", async (req, res) => {
     const landmarks = await Landmark.find();
     res.json(landmarks);
   } catch (error) {
-    console.error("Landmark getirme hatası:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
+    console.error("Error fetching landmarks:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -72,13 +74,13 @@ app.get("/landmarks/:id", async (req, res) => {
     const landmark = await Landmark.findById(req.params.id);
 
     if (!landmark) {
-      return res.status(404).json({ error: "Landmark bulunamadı" });
+      return res.status(404).json({ error: "Landmark not found" });
     }
 
     res.json(landmark);
   } catch (error) {
-    console.error("Landmark getirme hatası:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
+    console.error("Error fetching landmark:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -106,13 +108,13 @@ app.put("/landmarks/:id", async (req, res) => {
     );
 
     if (!updatedLandmark) {
-      return res.status(404).json({ error: "Landmark bulunamadı" });
+      return res.status(404).json({ error: "Landmark not found" });
     }
 
     res.json(updatedLandmark);
   } catch (error) {
-    console.error("Landmark güncelleme hatası:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
+    console.error("Error updating landmark:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -121,24 +123,24 @@ app.delete("/landmarks/:id", async (req, res) => {
     const deletedLandmark = await Landmark.findByIdAndDelete(req.params.id);
 
     if (!deletedLandmark) {
-      return res.status(404).json({ error: "Landmark bulunamadı" });
+      return res.status(404).json({ error: "Landmark not found" });
     }
 
     await VisitedLandmark.deleteMany({ landmark_id: req.params.id });
 
-    // Also remove this landmark from any plans
     await VisitingPlan.updateMany(
       { "landmarks.landmark_id": req.params.id },
       { $pull: { landmarks: { landmark_id: req.params.id } } }
     );
 
-    res.json({ message: "Landmark başarıyla silindi" });
+    res.json({ message: "Landmark successfully deleted" });
   } catch (error) {
-    console.error("Landmark silme hatası:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
+    console.error("Error deleting landmark:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
+//Visited landmarks endpoints
 
 app.post("/visited", async (req, res) => {
   try {
@@ -146,25 +148,25 @@ app.post("/visited", async (req, res) => {
     const visited_date = req.body.visited_date || new Date();
 
     if (!landmark_id) {
-      return res.status(400).json({ error: "Landmark ID zorunludur" });
+      return res.status(400).json({ error: "Landmark ID is required" });
     }
 
     const landmark = await Landmark.findById(landmark_id);
     if (!landmark) {
-      return res.status(404).json({ error: "Landmark bulunamadı" });
+      return res.status(404).json({ error: "Landmark not found" });
     }
 
     const newVisit = new VisitedLandmark({
       landmark_id,
       visited_date,
-      visitor_name: visitor_name || "Anonim",
+      visitor_name: visitor_name || "Anonymous",
     });
 
     const savedVisit = await newVisit.save();
     res.status(201).json(savedVisit);
   } catch (error) {
-    console.error("Ziyaret kaydetme hatası:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
+    console.error("Error saving visit:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -177,15 +179,15 @@ app.get("/visited", async (req, res) => {
         const landmark = await Landmark.findById(visit.landmark_id);
         return {
           ...visit._doc,
-          landmark: landmark || { name: "Silinmiş Landmark" },
+          landmark: landmark || { name: "Deleted Landmark" },
         };
       })
     );
 
     res.json(enrichedVisits);
   } catch (error) {
-    console.error("Ziyaret geçmişi getirme hatası:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
+    console.error("Error fetching visit history:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -197,34 +199,33 @@ app.get("/visited/:id", async (req, res) => {
 
     res.json(visits);
   } catch (error) {
-    console.error("Ziyaret geçmişi getirme hatası:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
+    console.error("Error fetching visit history:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
 
-// Create a new visiting plan
+//Visiting plans endpoints
+
 app.post("/plans", async (req, res) => {
   try {
     const { name, creator, landmarks, description, is_public, planned_date } = req.body;
 
     if (!name) {
-      return res.status(400).json({ error: "Plan ismi zorunludur" });
+      return res.status(400).json({ error: "Plan name is required" });
     }
 
     if (!landmarks || !Array.isArray(landmarks) || landmarks.length === 0) {
-      return res.status(400).json({ error: "En az bir landmark eklenmelidir" });
+      return res.status(400).json({ error: "At least one landmark must be added" });
     }
 
-    // Validate that all landmarks exist
     const landmarkIds = landmarks.map(item => item.landmark_id);
     const existingLandmarks = await Landmark.find({ _id: { $in: landmarkIds } });
 
     if (existingLandmarks.length !== landmarkIds.length) {
-      return res.status(400).json({ error: "Bazı landmarklar bulunamadı" });
+      return res.status(400).json({ error: "Some landmarks were not found" });
     }
 
-    // Add order if not provided
     const landmarksWithOrder = landmarks.map((item, index) => ({
       ...item,
       order: item.order || index
@@ -232,7 +233,7 @@ app.post("/plans", async (req, res) => {
 
     const newPlan = new VisitingPlan({
       name,
-      creator: creator || "Anonim",
+      creator: creator || "Anonymous",
       landmarks: landmarksWithOrder,
       description: description || "",
       is_public: is_public !== undefined ? is_public : true,
@@ -241,7 +242,6 @@ app.post("/plans", async (req, res) => {
 
     const savedPlan = await newPlan.save();
 
-    // Populate landmark details for the response
     const populatedPlan = await VisitingPlan.findById(savedPlan._id);
     const enrichedPlan = {
       ...populatedPlan._doc,
@@ -250,7 +250,7 @@ app.post("/plans", async (req, res) => {
           const landmark = await Landmark.findById(item.landmark_id);
           return {
             ...item._doc,
-            landmark_details: landmark || { name: "Silinmiş Landmark" }
+            landmark_details: landmark || { name: "Deleted Landmark" }
           };
         })
       )
@@ -258,12 +258,11 @@ app.post("/plans", async (req, res) => {
 
     res.status(201).json(enrichedPlan);
   } catch (error) {
-    console.error("Ziyaret planı oluşturma hatası:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
+    console.error("Error creating visiting plan:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-// Get all visiting plans
 app.get("/plans", async (req, res) => {
   try {
     const plans = await VisitingPlan.find().sort({ createdAt: -1 });
@@ -275,7 +274,7 @@ app.get("/plans", async (req, res) => {
             const landmark = await Landmark.findById(item.landmark_id);
             return {
               ...item._doc,
-              landmark_details: landmark || { name: "Silinmiş Landmark" }
+              landmark_details: landmark || { name: "Deleted Landmark" }
             };
           })
         );
@@ -289,8 +288,46 @@ app.get("/plans", async (req, res) => {
 
     res.json(enrichedPlans);
   } catch (error) {
-    console.error("Ziyaret planlarını getirme hatası:", error);
-    res.status(500).json({ error: "Sunucu hatası" });
+    console.error("Error fetching visiting plans:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.delete("/plans/:id", async (req, res) => {
+  try {
+    const deletedPlan = await VisitingPlan.findByIdAndDelete(req.params.id);
+
+    if (!deletedPlan) {
+      return res.status(404).json({ error: "Visiting plan not found" });
+    }
+
+    res.json({ message: "Visiting plan successfully deleted" });
+  } catch (error) {
+    console.error("Error deleting visiting plan:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Search and filter landmark endpoint
+app.get("/search-landmarks", async (req, res) => {
+  try {
+    const { name, category } = req.query;
+    
+    let query = {};
+    
+    if (name) {
+      query.name = { $regex: name, $options: 'i' }; 
+    }
+    
+    if (category && category !== "all") {
+      query.category = category;
+    }
+    
+    const landmarks = await Landmark.find(query);
+    res.json(landmarks);
+  } catch (error) {
+    console.error("Error searching landmarks:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 

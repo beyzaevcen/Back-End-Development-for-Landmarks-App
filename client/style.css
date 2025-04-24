@@ -146,7 +146,7 @@ button:focus {
 #landmarkList {
   list-style-type: none;
   margin-bottom: 15px;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
 }
 
@@ -654,21 +654,139 @@ button:focus {
   }
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* Search and Filter Styles */
+.search-filter-container {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
+.search-box {
+  display: flex;
+  margin-bottom: 12px;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #aaa;
-  border-radius: 10px;
+.search-box input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #888;
+.search-box button {
+  padding: 8px 15px;
+  margin-left: 8px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
+
+.filter-box {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-box select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  min-width: 120px;
+}
+
+#resetFiltersBtn {
+  padding: 8px 15px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.highlight {
+  background-color: rgba(255, 255, 0, 0.3);
+  padding: 2px;
+  border-radius: 2px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Category Labels */
+.category-label {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-left: 5px;
+  color: white;
+  background-color: #95a5a6;
+}
+
+.category-label[data-category="historical"] {
+  background-color: #8e44ad;
+}
+
+.category-label[data-category="natural"] {
+  background-color: #27ae60;
+}
+
+.category-label[data-category="cultural"] {
+  background-color: #f39c12;
+}
+
+.category-label[data-category="restaurant"] {
+  background-color: #e74c3c;
+}
+
+.category-label[data-category="hotel"] {
+  background-color: #3498db;
+}
+
+.category-label[data-category="other"] {
+  background-color: #95a5a6;
+}
+
+.visited-badge {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 3px 8px;
+  background-color: #2ecc71;
+  color: white;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.landmark-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+/* Mobile Responsiveness for Search/Filter */
+@media (max-width: 600px) {
+  .search-box, .filter-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-box button, .filter-box select, #resetFiltersBtn {
+    margin-top: 8px;
+    margin-left: 0;
+    width: 100%;
+  }
+}
+

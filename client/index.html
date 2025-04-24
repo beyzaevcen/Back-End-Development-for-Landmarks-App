@@ -32,6 +32,8 @@
             <option value="historical">Historical</option>
             <option value="natural">Natural</option>
             <option value="cultural">Cultural</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="hotel">Hotel</option>
             <option value="other">Other</option>
           </select>
           <textarea
@@ -44,21 +46,40 @@
         
         <div class="form-section">
           <h3>Selected Landmarks</h3>
+
+                <!-- Search and Filter Container -->
+
+<div class="search-filter-container">
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search by landmark name...">
+    <button id="searchBtn">Search</button>
+  </div>
+  <div class="filter-box">
+    <select id="categoryFilter">
+      <option value="all">All Categories</option>
+      <option value="historical">Historical</option>
+      <option value="natural">Natural</option>
+      <option value="cultural">Cultural</option>
+      <option value="restaurant">Restaurant</option>
+      <option value="hotel">Hotel</option>
+      <option value="other">Other</option>
+    </select>
+    <button id="resetFiltersBtn">Reset the filters</button>
+  </div>
+</div>
+          
           <ul id="landmarkList" class="landmark-list">
-            <!-- Landmarks will be added here dynamically -->
             <li class="empty-message">No landmarks added yet.</li>
           </ul>
           <div class="button-group">
-            <button id="addNotesBtn" class="view-btn">Add Notes</button>
             <button id="showVisitedBtn" class="visit-btn">Show Visited</button>
             <button id="createPlanBtn" class="edit-btn">Create Plan</button>
           </div>
         </div>
       </div>
       
-      <!-- Plans Container - This is the new section for displaying saved plans -->
+      <!-- Plans Container -->
       <div id="plans-container" class="plans-container">
-        <!-- Plans will be added here dynamically -->
         <h3>Your Saved Plans</h3>
         <p class="empty-message">No saved plans yet. Create your first plan!</p>
       </div>
@@ -80,7 +101,6 @@
           <span class="close">&times;</span>
           <h3>Visited Landmarks</h3>
           <div id="visitedList">
-            <!-- Visited landmarks will be added here -->
           </div>
         </div>
       </div>
@@ -95,11 +115,11 @@
         </div>
       </div>
     </div>
-
+    
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Load the separated JavaScript files in the correct order -->
     <script src="map-controller.js"></script>
     <script src="landmark-operations.js"></script>
     <script src="visits-and-plans.js"></script>
+    <script src="search-filter.js"></script>
   </body>
 </html>
