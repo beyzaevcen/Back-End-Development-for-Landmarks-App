@@ -10,7 +10,14 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:3002", "https://back-end-development-for-landmarks-j1q6gno2u.vercel.app"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  })
+);
 app.use(express.json());
 
 // MongoDB Connection
