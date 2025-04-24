@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import Landmark from "./models/Landmark.js";
 import VisitedLandmark from "./models/VisitedLandmark.js";
 import VisitingPlan from "./models/VisitingPlan.js";
+import serverless from "serverless-http"; 
 
 dotenv.config();
 
@@ -332,4 +333,4 @@ app.get("/search-landmarks", async (req, res) => {
 
 
 
-export default app;
+export const handler = serverless(app);
