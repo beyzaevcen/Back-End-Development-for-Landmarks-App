@@ -12,7 +12,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:3002", "https://back-end-development-for-landmarks-j1q6gno2u.vercel.app"],
+    origin: ["http://localhost:3002", "https://back-end-development-for-landmarks-app.vercel.app"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
