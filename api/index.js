@@ -26,9 +26,14 @@ mongoose
   .then(() => {
     console.log("MongoDB connection successful");
 
-    // app.listen(process.env.PORT, () => {
-    //   console.log(`Server running on port ${process.env.PORT}`);
-    // });
+    if (process.env.PORT) {
+      app.listen(process.env.PORT, () => {
+        console.log(`Server running on port ${process.env.PORT}`);
+      });
+    } else {
+      console.log("PORT environment variable is not defined. Server not started.");
+    }
+
   })
   .catch((err) => {
     console.error("MongoDB connection error:", err);
