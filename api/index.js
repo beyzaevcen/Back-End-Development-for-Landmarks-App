@@ -26,12 +26,14 @@ mongoose
   .then(() => {
     console.log("MongoDB connection successful");
 
-    if (process.env.PORT) {
+    if (process.env.NODE_ENV === "development" && process.env.PORT) {
       app.listen(process.env.PORT, () => {
-        console.log(`Server running on port ${process.env.PORT}`);
+        console.log(`Development server running on port ${process.env.PORT}`);
       });
-    } else {
+    } else if (!process.env.PORT) {
       console.log("PORT environment variable is not defined. Server not started.");
+    } else {
+      console.log("Server not started in non-development environment.");
     }
 
   })
